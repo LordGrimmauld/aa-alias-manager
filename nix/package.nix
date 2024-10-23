@@ -4,7 +4,7 @@ rustPlatform.buildRustPackage {
   version = "unstable-2024-10-23";
   src = lib.cleanSource ../.;
 
-  cargoHash = "sha256-M9TCfJuB1Qhow+yOttj8661DaCicrRQSebnytRoUfng=";
+  cargoHash = "sha256-ovl1fLT9yxdunlLYhouoHJIR0ifjBlDFXs2dx0fSoqY=";
 
   meta = {
     description = "Tool to generate a file of aliases for apparmor based on current nixos generation";

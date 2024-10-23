@@ -8,4 +8,8 @@ use std::path::PathBuf;
 pub struct Cli {
     #[clap(short, long, default_value = "aliases.d")]
     pub output: PathBuf,
+
+    #[clap(short, long, default_value = "patterns.json")]
+    pub patterns: PathBuf,
+
 }

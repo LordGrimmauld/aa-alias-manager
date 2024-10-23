@@ -71,11 +71,11 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          deskwhich-pkg = (pkgs.callPackage ./nix/package.nix { });
+          aa-alias-manager-pkg = (pkgs.callPackage ./nix/package.nix { });
         in
         {
-          deskwhich = deskwhich-pkg;
-          default = deskwhich-pkg;
+          aa-alias-manager = aa-alias-manager-pkg;
+          default = aa-alias-manager-pkg;
         }
       );
     };

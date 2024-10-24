@@ -11,4 +11,7 @@ pub struct Cli {
 
     #[clap(short, long, default_value = "patterns.json")]
     pub patterns: PathBuf,
+
+    #[clap(short, long, default_value_t = false)]
+    pub append: bool,
 }

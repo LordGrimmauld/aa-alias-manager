@@ -19,20 +19,23 @@ struct Pattern {
     pattern: Vec<String>,
 }
 
-fn main() -> std::io::Result<()> {
+fn main() {
     let cli = Cli::parse();
 
-    let pattern_file = File::open(cli.patterns)?;
-    let patterns: Vec<Pattern> = serde_json::from_reader(pattern_file)?;
+    let pattern_file = File::open(cli.patterns.clone())
+        .expect(format!("Failed to open pattern file {}", cli.patterns.display()).as_str());
+    let patterns: Vec<Pattern> = serde_json::from_reader(pattern_file)
+        .expect(format!("Failed to parse pattern file {}", cli.patterns.display()).as_str());
 
     let store_items = Command::new("nix-store")
         .arg("-q")
         .arg("/run/current-system")
         .arg("-R")
         .output()
-        .expect("failed to execute process");
+        .expect("failed to query store dependencies of current system");
 
-    fs::create_dir_all(cli.output.clone())?;
+    fs::create_dir_all(cli.output.clone())
+        .expect(format!("failed to create alias folder {}", cli.output.display()).as_str());
 
     let alias_files: HashMap<&Pattern, File> = patterns
         .iter()
@@ -41,7 +44,12 @@ fn main() -> std::io::Result<()> {
             fp.push(&p.name);
             (
                 p,
-                File::options().append(true).create(true).open(fp).unwrap(),
+                File::options()
+                    .append(cli.append)
+                    .write(!cli.append)
+                    .create(true)
+                    .open(fp.clone())
+                    .expect(format!("failed to create alias file {}", fp.display()).as_str()),
             )
         })
         .collect();
@@ -60,11 +68,9 @@ fn main() -> std::io::Result<()> {
                             format!("alias {} -> {},\n", pattern.target, path_part.display())
                                 .as_ref(),
                         )
-                        .expect("Error writing alias to file");
+                            .expect("Error writing alias to file");
                     }
                 });
             })
         });
-
-    Ok(())
 }

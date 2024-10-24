@@ -1,10 +1,23 @@
-{ lib, rustPlatform }:
+{
+  lib,
+  rustPlatform,
+  makeWrapper,
+  nix,
+}:
 rustPlatform.buildRustPackage {
   pname = "aa-alias-manager";
   version = "unstable-2024-10-23";
   src = lib.cleanSource ../.;
 
   cargoHash = "sha256-ovl1fLT9yxdunlLYhouoHJIR0ifjBlDFXs2dx0fSoqY=";
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ nix ];
+
+  postInstall = ''
+    wrapProgram $out/bin/aa-alias-manager \
+      --suffix PATH : "${nix}/bin/"
+  '';
 
   meta = {
     description = "Tool to generate a file of aliases for apparmor based on current nixos generation";

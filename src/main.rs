@@ -10,7 +10,7 @@ use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{exit, Command};
 
 #[derive(Deserialize, Hash, Eq, PartialEq, Debug)]
 struct Pattern {
@@ -33,6 +33,20 @@ fn main() {
         .arg("-R")
         .output()
         .expect("failed to query store dependencies of current system");
+
+    // courtesy don't delete target folders if they don't match the rough pattern
+    if cli.output.is_dir() && !cli.append {
+        if fs::read_dir(cli.output.clone())
+            .expect("Error while reading target directory contents")
+            .map(|f| f.expect("Error while confirming target directory contents"))
+            .any(|f| !f.path().is_file()) {
+            eprintln!("Found irregular file in output. Refusing to wipe output directory.");
+            exit(1)
+        }
+
+        fs::remove_dir_all(cli.output.clone())
+            .expect(format!("Failed to clean old output {}", cli.output.display()).as_str());
+    }
 
     fs::create_dir_all(cli.output.clone())
         .expect(format!("failed to create alias folder {}", cli.output.display()).as_str());

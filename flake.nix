@@ -62,6 +62,10 @@
               pkg-config
               rustup
               nil
+
+              jsonfmt
+              nixfmt-rfc-style
+              rustfmt
             ];
           };
         }

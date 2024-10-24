@@ -2,11 +2,25 @@
   {
     "name": "bin",
     "target": "/bin",
-    "pattern": [ "bin", "libexec", "sbin", "usr/bin", "usr/sbin" ]
+    "pattern": [
+      "bin",
+      "libexec",
+      "sbin",
+      "usr/bin",
+      "usr/sbin"
+    ]
   },
   {
     "name": "lib",
     "target": "/lib",
-    "pattern": [ "lib", "libexec", "usr/lib64", "usr/lib32" ]
+    "pattern": [
+      "lib",
+      "libexec",
+      "lib32",
+      "lib64",
+      "usr/lib64",
+      "usr/lib32",
+      "usr/libexec"
+    ]
   }
 ]

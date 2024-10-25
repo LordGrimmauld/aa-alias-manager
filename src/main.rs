@@ -17,6 +17,9 @@ struct Pattern {
     target: String,
     name: String,
     pattern: Vec<String>,
+
+    #[serde(default)]
+    individual: bool,
 }
 
 fn main() {
@@ -78,11 +81,31 @@ fn main() {
                     let mut path_part = path.clone();
                     path_part.push(store_suffix);
                     if path_part.is_dir() {
-                        file.write(
-                            format!("alias {} -> {},\n", pattern.target, path_part.display())
-                                .as_ref(),
-                        )
-                            .expect("Error writing alias to file");
+                        if pattern.individual {
+                            path_part.read_dir()
+                                .expect(format!("Error traversing Path: {}", path_part.display()).as_str())
+                                .map(|f| f.expect(format!("Error while reading directory contents: {}", path_part.display()).as_str()))
+                                .filter(|f| f.path().is_file() || f.path().is_symlink()) // todo: should symlink match??
+                                .for_each(|f| {
+                                    let mut path_part_specific = path_part.clone();
+                                    path_part_specific.push(f.file_name());
+
+                                    let mut target = PathBuf::from(&pattern.target);
+                                    target.push(f.file_name());
+
+                                    file.write(
+                                        format!("alias {} -> {},\n", target.display(), path_part_specific.display())
+                                            .as_ref(),
+                                    )
+                                        .expect("Error writing alias to file");
+                                });
+                        } else {
+                            file.write(
+                                format!("alias {} -> {},\n", pattern.target, path_part.display())
+                                    .as_ref(),
+                            )
+                                .expect("Error writing alias to file");
+                        }
                     }
                 });
             })

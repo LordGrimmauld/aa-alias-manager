@@ -8,7 +8,8 @@
       "sbin",
       "usr/bin",
       "usr/sbin"
-    ]
+    ],
+    "individual": true
   },
   {
     "name": "lib",

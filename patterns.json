@@ -10,7 +10,8 @@
       "usr/sbin"
     ],
     "individual": true,
-    "only_exe": true
+    "only_exe": true,
+    "disallowed_strings": [ "!" ]
   },
   {
     "name": "lib",

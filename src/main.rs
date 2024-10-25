@@ -24,6 +24,9 @@ struct Pattern {
 
     #[serde(default)]
     only_exe: bool,
+
+    #[serde(default)]
+    disallowed_strings: Vec<String>,
 }
 
 fn main() {
@@ -91,6 +94,7 @@ fn main() {
                                 .map(|f| f.expect(format!("Error while reading directory contents: {}", path_part.display()).as_str()))
                                 .filter(|f| f.path().is_file() || f.path().is_symlink()) // todo: should symlink match??
                                 .filter(|f| f.path().is_executable() || !pattern.only_exe)
+                                .filter(|f| pattern.disallowed_strings.iter().all(|s| !f.file_name().to_str().unwrap_or_default().contains(s)))
                                 .for_each(|f| {
                                     let mut path_part_specific = path_part.clone();
                                     path_part_specific.push(f.file_name());

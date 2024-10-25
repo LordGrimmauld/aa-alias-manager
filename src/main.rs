@@ -11,6 +11,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{exit, Command};
+use is_executable::IsExecutable;
 
 #[derive(Deserialize, Hash, Eq, PartialEq, Debug)]
 struct Pattern {
@@ -20,6 +21,9 @@ struct Pattern {
 
     #[serde(default)]
     individual: bool,
+
+    #[serde(default)]
+    only_exe: bool,
 }
 
 fn main() {
@@ -86,6 +90,7 @@ fn main() {
                                 .expect(format!("Error traversing Path: {}", path_part.display()).as_str())
                                 .map(|f| f.expect(format!("Error while reading directory contents: {}", path_part.display()).as_str()))
                                 .filter(|f| f.path().is_file() || f.path().is_symlink()) // todo: should symlink match??
+                                .filter(|f| f.path().is_executable() || !pattern.only_exe)
                                 .for_each(|f| {
                                     let mut path_part_specific = path_part.clone();
                                     path_part_specific.push(f.file_name());

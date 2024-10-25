@@ -9,7 +9,8 @@
       "usr/bin",
       "usr/sbin"
     ],
-    "individual": true
+    "individual": true,
+    "only_exe": true
   },
   {
     "name": "lib",

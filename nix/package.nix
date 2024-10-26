@@ -9,7 +9,7 @@ rustPlatform.buildRustPackage {
   version = "unstable-2024-10-23";
   src = lib.cleanSource ../.;
 
-  cargoHash = "sha256-ovl1fLT9yxdunlLYhouoHJIR0ifjBlDFXs2dx0fSoqY=";
+  cargoHash = "sha256-otmVpAAUiby4bFlAc9RB2M7dWVDxEGfN7GIQm5P46N8=";
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ nix ];

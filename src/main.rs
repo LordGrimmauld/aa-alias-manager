@@ -59,7 +59,7 @@ fn main() {
     }
 
     fs::create_dir_all(cli.output.clone())
-        .expect(format!("failed to create alias folder {}", cli.output.display()).as_str());
+        .expect(format!("Failed to create alias folder {}", cli.output.display()).as_str());
 
     let alias_files: HashMap<&Pattern, File> = patterns
         .iter()
@@ -92,9 +92,9 @@ fn main() {
                             path_part.read_dir()
                                 .expect(format!("Error traversing Path: {}", path_part.display()).as_str())
                                 .map(|f| f.expect(format!("Error while reading directory contents: {}", path_part.display()).as_str()))
-                                .filter(|f| f.path().is_file() || f.path().is_symlink()) // todo: should symlink match??
-                                .filter(|f| f.path().is_executable() || !pattern.only_exe)
-                                .filter(|f| pattern.disallowed_strings.iter().all(|s| !f.file_name().to_str().unwrap_or_default().contains(s)))
+                                .filter(|f| (f.path().is_file() || f.path().is_symlink()) // todo: should symlink match??
+                                        && (f.path().is_executable() || !pattern.only_exe) 
+                                        && pattern.disallowed_strings.iter().all(|s| !f.file_name().to_str().unwrap_or_default().contains(s))) 
                                 .for_each(|f| {
                                     let mut path_part_specific = path_part.clone();
                                     path_part_specific.push(f.file_name());

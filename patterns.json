@@ -11,7 +11,13 @@
     ],
     "individual": true,
     "only_exe": true,
-    "disallowed_strings": [ "!" ]
+    "disallowed_strings": [
+      "!"
+    ],
+    "only_include": [
+      "firefox",
+      "whoami"
+    ]
   },
   {
     "name": "lib",

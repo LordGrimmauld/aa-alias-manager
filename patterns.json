@@ -2,7 +2,7 @@
   {
     "name": "bin",
     "target": "/bin",
-    "pattern": [
+    "store_suffixes": [
       "bin",
       "libexec",
       "sbin",
@@ -22,7 +22,7 @@
   {
     "name": "lib",
     "target": "/lib",
-    "pattern": [
+    "store_suffixes": [
       "lib",
       "libexec",
       "lib32",

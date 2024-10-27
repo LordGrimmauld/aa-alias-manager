@@ -1,44 +1,23 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 mod args;
-
 use crate::args::Cli;
+
+mod pattern;
+use crate::pattern::{get_patterns, Pattern};
+
 use clap::Parser;
-use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{exit, Command};
-use is_executable::IsExecutable;
-
-#[derive(Deserialize, Hash, Eq, PartialEq, Debug)]
-struct Pattern {
-    target: String,
-    name: String,
-    pattern: Vec<String>,
-
-    #[serde(default)]
-    individual: bool,
-
-    #[serde(default)]
-    only_exe: bool,
-
-    #[serde(default)]
-    disallowed_strings: Vec<String>,
-
-    #[serde(default)]
-    only_include: Vec<String>,
-}
 
 fn main() {
     let cli = Cli::parse();
 
-    let pattern_file = File::open(cli.patterns.clone())
-        .expect(format!("Failed to open pattern file {}", cli.patterns.display()).as_str());
-    let patterns: Vec<Pattern> = serde_json::from_reader(pattern_file)
-        .expect(format!("Failed to parse pattern file {}", cli.patterns.display()).as_str());
+    let patterns = get_patterns(cli.patterns);
 
     let store_items = Command::new("nix-store")
         .arg("-q")
@@ -47,7 +26,7 @@ fn main() {
         .output()
         .expect("failed to query store dependencies of current system");
 
-    // courtesy don't delete target folders if they don't match the rough pattern
+    // courtesy: don't delete target folders if they don't match the rough pattern
     if cli.output.is_dir() && !cli.append {
         if fs::read_dir(cli.output.clone())
             .expect("Error while reading target directory contents")
@@ -87,39 +66,8 @@ fn main() {
         .filter(|p| p.is_dir())
         .for_each(|path| {
             alias_files.iter().for_each(|(pattern, mut file)| {
-                pattern.pattern.iter().for_each(|store_suffix| {
-                    let mut path_part = path.clone();
-                    path_part.push(store_suffix);
-                    if path_part.is_dir() {
-                        if pattern.individual {
-                            path_part.read_dir()
-                                .expect(format!("Error traversing Path: {}", path_part.display()).as_str())
-                                .map(|f| f.expect(format!("Error while reading directory contents: {}", path_part.display()).as_str()))
-                                .filter(|f| (f.path().is_file() || f.path().is_symlink()) // todo: should symlink match??
-                                        && (f.path().is_executable() || !pattern.only_exe) 
-                                        && pattern.disallowed_strings.iter().all(|s| !f.file_name().to_str().unwrap_or_default().contains(s))
-                                        && (pattern.only_include.len() == 0 || pattern.only_include.iter().any(|s| f.file_name().to_str().unwrap_or_default().eq(s))))
-                                .for_each(|f| {
-                                    let mut path_part_specific = path_part.clone();
-                                    path_part_specific.push(f.file_name());
-
-                                    let mut target = PathBuf::from(&pattern.target);
-                                    target.push(f.file_name());
-
-                                    file.write(
-                                        format!("alias {} -> {},\n", target.display(), path_part_specific.display())
-                                            .as_ref(),
-                                    )
-                                        .expect("Error writing alias to file");
-                                });
-                        } else {
-                            file.write(
-                                format!("alias {} -> {},\n", pattern.target, path_part.display())
-                                    .as_ref(),
-                            )
-                                .expect("Error writing alias to file");
-                        }
-                    }
+                pattern.find_matches(&path).for_each(|a| {
+                    file.write(a.as_ref()).expect("Error writing alias to file");
                 });
             })
         });

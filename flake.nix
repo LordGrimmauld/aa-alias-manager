@@ -1,7 +1,13 @@
 {
-  inputs.nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+  inputs = {
+    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+    nix-github-actions = {
+      url = "github:nix-community/nix-github-actions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
-  outputs = { nixpkgs, self, ... }:
+  outputs = { nixpkgs, self, nix-github-actions, ... }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
@@ -80,5 +86,7 @@
         };
         default = aa-alias-manager;
       });
+
+      githubActions = nix-github-actions.lib.mkGithubMatrix { checks = self.packages; };
     };
 }

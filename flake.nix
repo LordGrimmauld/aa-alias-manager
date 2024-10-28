@@ -87,6 +87,6 @@
         default = aa-alias-manager;
       });
 
-      githubActions = nix-github-actions.lib.mkGithubMatrix { checks = self.packages; };
+      githubActions = nix-github-actions.lib.mkGithubMatrix { checks = nixpkgs.lib.getAttrs [ "x86_64-linux" ] self.packages; }; # todo: figure out testing on aarch64-linux
     };
 }

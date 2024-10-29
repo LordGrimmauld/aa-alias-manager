@@ -67,7 +67,7 @@ impl Pattern {
                     let child_name = child_path.file_name().unwrap_or_default();
                     store_path.push(child_name);
                     target.push(child_name);
-                    writeln!(&mut str_buf, "alias {} -> {},", self.target, store_path.display()).expect("could not write match to string");
+                    writeln!(&mut str_buf, "alias {} -> {},", target.display(), store_path.display()).expect("could not write match to string");
                     consumer(&str_buf);
 
                     // clean up

@@ -1,0 +1,16 @@
+[
+  {
+    "name": "bin",
+    "target": "/bin",
+    "pattern": [
+      "bin",
+      "libexec",
+      "sbin",
+      "usr/bin",
+      "usr/sbin"
+    ],
+    "individual": true,
+    "only_exe": true,
+    "disallowed_strings": [ "!" ]
+  }
+]

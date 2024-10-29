@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
+use std::fmt::Write;
 use is_executable::IsExecutable;
 use serde::Deserialize;
 use std::fs::File;
-use std::iter;
 use std::path::PathBuf;
-
 
 #[derive(Deserialize, Hash, Eq, PartialEq, Debug)]
 pub(crate) struct Pattern {
@@ -35,34 +34,58 @@ impl Pattern {
             && (self.only_include.len() == 0 || self.only_include.iter().any(|s| filename.eq(s)))
     }
 
-    pub(crate) fn find_matches<'a>(&'a self, store_entry: &'a PathBuf) -> Box<dyn Iterator<Item=String> + '_> {
-        Box::new(self.store_suffixes.iter().flat_map(move |store_suffix| -> Box<dyn Iterator<Item=String>> {
-            let mut store_path = store_entry.clone();
+    pub(crate) fn find_matches(&self, store_entry: &PathBuf, mut consumer: impl FnMut(&str)) {
+        if !store_entry.is_dir() { return; } // Nothing worth aliasing except directory contents
+
+        // instead of making a new store_path for each suffix, we have this path
+        //   between runs it is equal to store_entry (but we have mutable access to it)
+        //   each run uses it for their own operations but cleans up after itself
+        let mut store_path = store_entry.clone();
+
+        // we write strings to this buffer and then call `consume` with a reference to it.
+        // Fewer allocations that calling format!, thus faster.
+        let mut str_buf = String::new();
+
+        // reused for the `self.target` clones that add onto the path
+        let mut target = PathBuf::from(&self.target);
+
+        for store_suffix in &self.store_suffixes {
+            debug_assert_eq!(&store_path, store_entry);
+            debug_assert!(str_buf.is_empty());
+
             store_path.push(store_suffix);
+            if !store_path.is_dir() {
+                // do nothing. This is relevant if the test path /nix/store/*/<store_suffix> does not exist.
+            } else if self.individual {
+                // yield multiple elements. This is useful because apparmor parser becomes slow with too many overlaps.
+                for child in store_path.read_dir().unwrap_or_else(|err| panic!("Error traversing Path: {path:?}, {err}", path=store_path)) {
+                    let child = child.unwrap_or_else(|err| panic!("Error while reading directory contents: {path:?}, {err}", path=store_path));
+                    let child_path = child.path();
+                    if !self.matches_individual(&child_path) {
+                        continue;
+                    }
+                    let child_name = child_path.file_name().unwrap_or_default();
+                    store_path.push(child_name);
+                    target.push(child_name);
+                    writeln!(&mut str_buf, "alias {} -> {}", self.target, store_path.display()).expect("could not write match to string");
+                    consumer(&str_buf);
 
-            let finalized_store_path = store_path.clone();
-
-            if !finalized_store_path.is_dir() {
-                Box::new(iter::empty())
-            } else if !self.individual {
-                Box::new(iter::once(format!("alias {} -> {},\n", self.target, finalized_store_path.display())))
+                    // clean up
+                    str_buf.clear();
+                    target.pop();
+                    store_path.pop();
+                }
             } else {
-                Box::new(finalized_store_path.read_dir()
-                    .expect(format!("Error traversing Path: {}", finalized_store_path.display()).as_str())
-                    .map(move |f| f.expect(format!("Error while reading directory contents: {}", store_path.display()).as_str()))
-                    .map(|f| f.path())
-                    .filter(|f| self.matches_individual(f))
-                    .map(move |f| {
-                        let mut path_part_specific = finalized_store_path.clone();
-                        path_part_specific.push(f.file_name().unwrap_or_default());
-
-                        let mut target = PathBuf::from(&self.target);
-                        target.push(f.file_name().unwrap_or_default());
-
-                        return format!("alias {} -> {},\n", target.display(), path_part_specific.display());
-                    }))
+                // yield a single element
+                writeln!(&mut str_buf, "alias {} -> {}", self.target, store_path.display()).expect("could not write match to string");
+                consumer(&str_buf);
+                str_buf.clear();
             }
-        }))
+
+            // cleanup
+            store_path.clear();
+            store_path.extend(store_entry);
+        }
     }
 }
 

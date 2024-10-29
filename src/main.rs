@@ -66,8 +66,8 @@ fn main() {
         .filter(|p| p.is_dir())
         .for_each(|path| {
             alias_files.iter().for_each(|(pattern, mut file)| {
-                pattern.find_matches(&path).for_each(|a| {
-                    file.write(a.as_ref()).expect("Error writing alias to file");
+                pattern.find_matches(&path, |a| {
+                    file.write_all(a.as_ref()).expect("Error writing alias to file");
                 });
             })
         });

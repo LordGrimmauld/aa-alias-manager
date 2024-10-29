@@ -13,10 +13,6 @@
     "only_exe": true,
     "disallowed_strings": [
       "!"
-    ],
-    "only_include": [
-      "firefox",
-      "whoami"
     ]
   },
   {

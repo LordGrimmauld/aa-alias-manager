@@ -87,6 +87,12 @@
         default = aa-alias-manager;
       });
 
+      nixosModules = {
+        aa-alias-manager = ./nix/aa-alias-module.nix;
+        default = self.nixosModules.aa-alias-manager;
+      };
+
+
       githubActions = nix-github-actions.lib.mkGithubMatrix { checks = nixpkgs.lib.getAttrs [ "x86_64-linux" ] self.packages; }; # todo: figure out testing on aarch64-linux
     };
 }

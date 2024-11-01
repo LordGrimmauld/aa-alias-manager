@@ -20,7 +20,7 @@ The module can be included by adding `aa-alias-manager.nixosModules.default` to 
 
 The relevant config bits are as follows:
 ```nix
-security.apparmor.aa-alias-manger = {
+security.apparmor.aa-alias-manager = {
 	enable = <bool>;
 	patterns = [
 		{

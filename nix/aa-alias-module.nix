@@ -10,7 +10,7 @@ let
   alias_dir = "/run/aliases.d";
 in
 {
-  options.security.apparmor.aa-alias-manger = with lib; {
+  options.security.apparmor.aa-alias-manager = with lib; {
     enable =
       (mkEnableOption ''
         apparmor alias manager to alias store entries with their equivalent on regular linux systems.
@@ -91,7 +91,7 @@ in
     };
   };
 
-  config = mkIf config.security.apparmor.aa-alias-manger.enable {
+  config = mkIf config.security.apparmor.aa-alias-manager.enable {
     security.apparmor.includes."tunables/alias.d/store" = ''
       include if exists "${alias_dir}"
     '';
@@ -111,7 +111,7 @@ in
 
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${getExe aa-alias-manager} -o ${alias_dir} -p ${config.security.apparmor.aa-alias-manger.patterns}";
+        ExecStart = "${getExe aa-alias-manager} -o ${alias_dir} -p ${config.security.apparmor.aa-alias-manager.patterns}";
       };
     };
   };

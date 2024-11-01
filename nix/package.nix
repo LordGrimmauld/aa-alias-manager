@@ -6,7 +6,7 @@
 }:
 rustPlatform.buildRustPackage {
   pname = "aa-alias-manager";
-  version = "unstable-2024-10-23";
+  version = "unstable-2024-11-01";
   src = lib.cleanSource ../.;
 
   cargoLock.lockFile = ../Cargo.lock;

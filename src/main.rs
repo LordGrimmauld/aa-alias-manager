@@ -31,7 +31,8 @@ fn main() {
         if fs::read_dir(cli.output.clone())
             .expect("Error while reading target directory contents")
             .map(|f| f.expect("Error while confirming target directory contents"))
-            .any(|f| !f.path().is_file()) {
+            .any(|f| !f.path().is_file())
+        {
             eprintln!("Found irregular file in output. Refusing to wipe output directory.");
             exit(1)
         }
@@ -67,7 +68,8 @@ fn main() {
         .for_each(|path| {
             alias_files.iter().for_each(|(pattern, mut file)| {
                 pattern.find_matches(&path, |a| {
-                    file.write_all(a.as_ref()).expect("Error writing alias to file");
+                    file.write_all(a.as_ref())
+                        .expect("Error writing alias to file");
                 });
             })
         });

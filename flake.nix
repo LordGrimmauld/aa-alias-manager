@@ -108,17 +108,17 @@
                         { ... }:
                         {
                           imports = [
-                            ./nix/vm-test-config.nix
+                            ./checks/vm-test-config.nix
                             self.nixosModules.default
                           ];
                         };
                     }
                   ];
                 }
-                // (import ./checks/${n})
+                // (import ./checks/test/${n})
               ))
             )
-          ) (builtins.readDir ./checks)
+          ) (builtins.readDir ./checks/test)
         )
       );
 

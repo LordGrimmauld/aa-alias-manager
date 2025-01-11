@@ -9,8 +9,7 @@
 
     # test profile to check whether alias is hitting.
     policies.coreutils = {
-      enable = true;
-      enforce = false;
+      state = "complain";
       profile = ''
         abi <abi/4.0>,
         include <tunables/global>
@@ -18,14 +17,6 @@
           include <abstractions/base>
         }
       '';
-    };
-  };
-
-  users.users = {
-    alice = {
-      isNormalUser = true;
-      initialPassword = "test";
-      extraGroups = [ "wheel" ];
     };
   };
 
